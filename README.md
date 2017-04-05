@@ -31,4 +31,4 @@ Kill enemies to get points. Enemies have their health displayed on them. Kill as
 * Luis Hernandez Cruz - lhernandezcruz@g.hmc.edu
 
 # Acknowledgments
-Thank you to all other games that have been made with piston your work was very helpfull in starting this game.
+Thank you to all other developers who have made games with piston your work was very helpfull in starting this game.
