@@ -28,7 +28,7 @@ Kill enemies to get points. Enemies have their health displayed on them. Kill as
 * find_folder = "0.3.0"
 
 # Authors
-* Luis Hernandez Cruz
+* Luis Hernandez Cruz - lhernandezcruz@g.hmc.edu
 
 # Acknowledgments
 Thank you to all other games that have been made with piston your work was very helpfull in starting this game.
