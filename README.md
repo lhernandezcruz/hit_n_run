@@ -4,6 +4,7 @@ Simple game made with Rust using piston. This game was written as a project for 
 
 # Build and Run
 ![Image of game](images/screenshot1.JPG?raw=true "Image of Hit and Run")
+
 Assuming you have Rust and Cargo installed. Just download the files and run the command 'cargo run'. 
 
 Note: Game has only been tested on Windows 10.
