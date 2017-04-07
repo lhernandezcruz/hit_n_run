@@ -37,7 +37,7 @@ pub struct Game {
     /// Kills made during this level
     current_kills: u32,
     /// But did you die tho?
-    game_over: bool
+    game_over: bool,
 }
 
 impl Game {

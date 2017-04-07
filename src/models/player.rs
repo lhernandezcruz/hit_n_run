@@ -177,7 +177,7 @@ impl Player {
             .trans(PLAYERD / 2.0 - GUND / 2.0, -GUND / 2.0);
 
         // create transfrom matrix for cooldown bar
-        let bartrans = c.transform.trans(self.pos.x - PLAYERD/2.0, self.pos.y);
+        let bartrans = c.transform.trans(self.pos.x - PLAYERD / 2.0, self.pos.y);
 
         // draw a circle rotating around the middle of the screen.
         ellipse(PINK, circle, bodytrans, gl);
@@ -191,15 +191,27 @@ impl Player {
 
         if self.bcooldown <= 0.0 {
             // get length of bars and draw current shots bar and cooldown bar
-            let slength = PLAYERD/(STARTSHOTS as f64) * (self.shots as f64);
-            let clength = PLAYERD/(SHOTCOOLDOWN as f64) * (self.scooldown as f64);
+            let slength = PLAYERD / (STARTSHOTS as f64) * (self.shots as f64);
+            let clength = PLAYERD / (SHOTCOOLDOWN as f64) * (self.scooldown as f64);
 
-            line(ORANGE, BARWIDTH, [0.0, SBARDIST, slength, SBARDIST], bartrans, gl);
-            line(ANGEL, BARWIDTH, [0.0, CBARDIST, clength, CBARDIST], bartrans, gl);
+            line(ORANGE,
+                 BARWIDTH,
+                 [0.0, SBARDIST, slength, SBARDIST],
+                 bartrans,
+                 gl);
+            line(ANGEL,
+                 BARWIDTH,
+                 [0.0, CBARDIST, clength, CBARDIST],
+                 bartrans,
+                 gl);
         } else {
             // get length for bar and draw cooldown bar
-            let blength = PLAYERD/(BURSTCOOLDOWN as f64) * (self.bcooldown);
-            line(ANGEL, BARWIDTH, [0.0, BBARDIST, blength, BBARDIST], bartrans, gl);
+            let blength = PLAYERD / (BURSTCOOLDOWN as f64) * (self.bcooldown);
+            line(ANGEL,
+                 BARWIDTH,
+                 [0.0, BBARDIST, blength, BBARDIST],
+                 bartrans,
+                 gl);
         }
     }
 

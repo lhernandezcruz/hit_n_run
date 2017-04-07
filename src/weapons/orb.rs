@@ -14,7 +14,7 @@ pub struct Orb {
     /// The position of the angle
     pos: Vector,
     /// Cooldown of orb activity
-    cooldown: f64
+    cooldown: f64,
 }
 
 impl Orb {
@@ -22,13 +22,13 @@ impl Orb {
     pub fn new(x: f64, y: f64) -> Self {
         // get the original position of the orb
         let rng_angle = rand::thread_rng().gen_range(0.0, 2.0);
-        let posx = x + (ORBD*f64::consts::PI*rng_angle).cos();
-        let posy = y + (ORBD*f64::consts::PI*rng_angle).sin();
+        let posx = x + (ORBD * f64::consts::PI * rng_angle).cos();
+        let posy = y + (ORBD * f64::consts::PI * rng_angle).sin();
         Orb {
             active: true,
             theta: rng_angle,
-            pos: Vector::new(posx,posy),
-            cooldown: COOLDOWN
+            pos: Vector::new(posx, posy),
+            cooldown: COOLDOWN,
         }
     }
 
@@ -43,17 +43,17 @@ impl Orb {
     }
 
     /// Update the orbs postition and angle
-    pub fn update(&mut self, x: f64, y :f64, dt: f64) {
-        self.theta += VEL*f64::consts::PI;
+    pub fn update(&mut self, x: f64, y: f64, dt: f64) {
+        self.theta += VEL * f64::consts::PI;
 
         // 2pi is the same as 0
-        if (self.theta - 2.0*f64::consts::PI).abs() < EPSILON {
+        if (self.theta - 2.0 * f64::consts::PI).abs() < EPSILON {
             self.theta = 0.0;
         }
 
         // update position
-        self.pos.x = x + ORBD*self.theta.cos();
-        self.pos.y = y + ORBD*self.theta.sin();
+        self.pos.x = x + ORBD * self.theta.cos();
+        self.pos.y = y + ORBD * self.theta.sin();
 
         // udpate active cooldown
         if !self.active {
@@ -75,6 +75,4 @@ impl Orb {
     pub fn get_active(&self) -> bool {
         self.active
     }
-
-    
 }

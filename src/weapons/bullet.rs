@@ -17,11 +17,11 @@ pub struct Bullet {
     /// Velocity of the bullet
     vel: Vector,
     /// Rotation of the bullet
-    rotation : f64,
+    rotation: f64,
     /// Whether the bullet is alive
     alive: bool,
     /// Whether the bullet is friendly
-    friendly: bool
+    friendly: bool,
 }
 
 impl Bullet {
@@ -32,7 +32,7 @@ impl Bullet {
             vel: Vector::new(VEL * rot.cos(), VEL * rot.sin()),
             rotation: rot,
             alive: true,
-            friendly: b 
+            friendly: b,
         }
     }
 
@@ -73,11 +73,7 @@ impl Bullet {
         let square = rectangle::square(0.0, 0.0, SIDELENGTH);
 
         // get color of bullet
-        let color = if self.get_friendly() {
-            LIGHTBLUE
-        } else {
-            RED
-        };
+        let color = if self.get_friendly() { LIGHTBLUE } else { RED };
 
         // create transform matrix
         let transform = c.transform

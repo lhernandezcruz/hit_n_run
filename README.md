@@ -31,6 +31,7 @@ GLHF
 * rand = "0.3"
 * find_folder = "0.3.0"
 
+Run "cargo rustdoc -- --no-defaults --passes "collapse-docs" --passes "unindent-comments" --passes strip-priv-imports" in order to create the documentation.
 # Authors
 * Luis Hernandez Cruz - lhernandezcruz@g.hmc.edu
 

@@ -181,7 +181,7 @@ impl Enemy {
              format!("{}", self.get_health()).as_str(),
              glyph_cache,
              c.transform.trans(self.pos.x, self.pos.y),
-             gl);        
+             gl);
     }
 
     /// Returns whether the enemy is alive
