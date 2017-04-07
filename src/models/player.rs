@@ -9,6 +9,7 @@ use piston::input::*;
 use std::f64;
 use vector::Vector;
 use weapons::bullet::Bullet;
+use models::enemy::Enemy;
 use constants::player_constants::*;
 use constants::color::*;
 use opengl_graphics::Texture;
@@ -28,8 +29,11 @@ pub struct Player {
     health: u32,
     /// Whether the player is shooting
     is_shooting: bool,
-    /// Cooldown of shooting (0 when the player can shoot)
-    cooldown: f64,
+    shots: u32,
+    /// Cooldown between shots
+    scooldown: f64,
+    /// Cooldown between bursts
+    bcooldown: f64,
     /// Texture for image of player
     texture: Result<Texture, String>,
 }
@@ -44,7 +48,9 @@ impl Player {
             rotation: 0.0,
             health: STARTHEALTH,
             is_shooting: false,
-            cooldown: 0.0,
+            shots: STARTSHOTS,
+            scooldown: 0.0,
+            bcooldown: 0.0,
             texture: Texture::from_path(find_folder::Search::ParentsThenKids(3, 3)
                 .for_folder("assets")
                 .unwrap()
@@ -52,6 +58,18 @@ impl Player {
         }
     }
 
+    /// Check if the player collided with a plaer
+    pub fn collide(&mut self, ref mut enemy: &mut Enemy) {
+        let xdiff = self.pos.x - enemy.get_orb_x();
+        let ydiff = self.pos.y - enemy.get_orb_y();
+        let dist = (xdiff.powi(2) + ydiff.powi(2)).sqrt();
+
+        // check if we crashed.
+        if self.get_alive() && enemy.get_orb_active() && dist < PLAYERD / 2.0 {
+            self.decrease_health();
+            enemy.set_orb_active(false);
+        }
+    }
     /// Check if player is hit by a bullet
     pub fn hit(&mut self, ref mut b: &mut Bullet) {
         // check the distance between bullet and player
@@ -60,7 +78,7 @@ impl Player {
         let dist = (xdiff.powi(2) + ydiff.powi(2)).sqrt();
 
         // update health and kill bullet if player is hit
-        if self.get_alive() && dist < PLAYERR / 2.0 - EPSILON {
+        if self.get_alive() && dist < PLAYERD / 2.0 - EPSILON {
             self.decrease_health();
             b.set_alive(false);
         }
@@ -111,7 +129,7 @@ impl Player {
         let dist = self.pos.dist(&self.desired_pos);
 
         // if the player is not at desired location keep velocity else stop velocity
-        if dist > 3.0 {
+        if dist > EPSILON {
             self.vel.x = VEL * args.dt * self.rotation.cos();
             self.vel.y = VEL * args.dt * self.rotation.sin();
         } else {
@@ -121,18 +139,17 @@ impl Player {
         // move player and reset velocity
         self.mov(dimensions[0], dimensions[1]);
 
-        // check if player is shooting
-        if self.get_shooting() {
-            // update cooldown
-            self.update_cooldown(args.dt);
+        // update cooldown
+        self.update_cooldown(args.dt);
 
-            // return bullet
-            if self.can_shoot() {
-                return Some(Bullet::new(self.pos.x + PLAYERR / 2.0 * self.rotation.cos(),
-                                        self.pos.y + PLAYERR / 2.0 * self.rotation.sin(),
-                                        self.rotation,
-                                        false));
-            }
+        // return bullet
+        if self.can_shoot() && self.get_shooting() {
+            self.scooldown = SHOTCOOLDOWN;
+            self.shots -= 1;
+            return Some(Bullet::new(self.pos.x + PLAYERD / 2.0 * self.rotation.cos(),
+                                    self.pos.y + PLAYERD / 2.0 * self.rotation.sin(),
+                                    self.rotation,
+                                    false));
         }
 
         // no bullet shot
@@ -143,36 +160,47 @@ impl Player {
     pub fn draw(&self, c: graphics::Context, gl: &mut GlGraphics) {
         use graphics::*;
 
-        let circle = rectangle::square(0.0, 0.0, PLAYERR);
-        let square = rectangle::square(0.0, 0.0, GUNR);
+        // circle fot the body
+        let circle = rectangle::square(0.0, 0.0, PLAYERD);
+        // square for the gun
+        let square = rectangle::square(0.0, 0.0, GUND);
 
-        // draw image
-        // create transform matrix
-        let transform = c.transform
-            .trans(self.pos.x, self.pos.y)
-            .trans(-PLAYERR / 2.0, -PLAYERR / 2.0);
-
-        let transform2 = c.transform
+        // create transform matrix for body and gun
+        let bodytrans = c.transform
             .trans(self.pos.x, self.pos.y)
             .rot_rad(self.rotation)
-            .trans(PLAYERR / 2.0 - GUNR / 2.0, -GUNR / 2.0);
+            .trans(-PLAYERD / 2.0, -PLAYERD / 2.0);
 
-        // move this to a sprite class
-        let transform3 = c.transform
+        let guntrans = c.transform
             .trans(self.pos.x, self.pos.y)
             .rot_rad(self.rotation)
-            .trans(-PLAYERR / 2.0, -PLAYERR / 2.0);
+            .trans(PLAYERD / 2.0 - GUND / 2.0, -GUND / 2.0);
+
+        // create transfrom matrix for cooldown bar
+        let bartrans = c.transform.trans(self.pos.x - PLAYERD/2.0, self.pos.y);
 
         // draw a circle rotating around the middle of the screen.
-        ellipse(PINK, circle, transform, gl);
-        rectangle(WHITE, square, transform2, gl);
+        ellipse(PINK, circle, bodytrans, gl);
+        rectangle(WHITE, square, guntrans, gl);
 
         // check if we have an image for the player
         match self.texture {
-            Ok(ref t) => image(t, transform3, gl),
+            Ok(ref t) => image(t, bodytrans, gl),
             _ => {}
         }
 
+        if self.bcooldown <= 0.0 {
+            // get length of bars and draw current shots bar and cooldown bar
+            let slength = PLAYERD/(STARTSHOTS as f64) * (self.shots as f64);
+            let clength = PLAYERD/(SHOTCOOLDOWN as f64) * (self.scooldown as f64);
+
+            line(ORANGE, BARWIDTH, [0.0, SBARDIST, slength, SBARDIST], bartrans, gl);
+            line(ANGEL, BARWIDTH, [0.0, CBARDIST, clength, CBARDIST], bartrans, gl);
+        } else {
+            // get length for bar and draw cooldown bar
+            let blength = PLAYERD/(BURSTCOOLDOWN as f64) * (self.bcooldown);
+            line(ANGEL, BARWIDTH, [0.0, BBARDIST, blength, BBARDIST], bartrans, gl);
+        }
     }
 
     /// Return the health
@@ -200,6 +228,12 @@ impl Player {
         self.pos.x = width / 2.0;
         self.pos.y = height / 2.0;
         self.health = STARTHEALTH;
+        self.rotation = 0.0;
+        self.bcooldown = 0.0;
+        self.scooldown = 0.0;
+        self.desired_pos.reset();
+        self.vel.reset();
+        self.shots = STARTSHOTS;
     }
 
     /// Start shooting
@@ -214,23 +248,34 @@ impl Player {
 
     /// Update the cooldown of shooting
     fn update_cooldown(&mut self, dt: f64) {
-        // if it is less than 0 we reset it.
-        if self.cooldown < 0.0 {
-            self.cooldown = COOLDOWN;
+        // we ran out of burst shots. so now we update burst cooldown
+        if self.shots == 0 {
+            self.scooldown = 0.0;
+            self.bcooldown = BURSTCOOLDOWN;
+            self.shots = STARTSHOTS;
+        }
+
+        // check if we can shoot
+        if self.bcooldown <= 0.0 {
+            if self.scooldown <= 0.0 {
+                // don't want our bar to be negative
+                self.scooldown = 0.0;
+            } else {
+                self.scooldown -= dt;
+            }
         } else {
-            self.cooldown -= dt;
+            self.bcooldown -= dt;
         }
     }
 
     /// Stop shooting.
     pub fn stop_shooting(&mut self) {
         self.is_shooting = false;
-        self.cooldown = 0.0;
     }
 
     /// Return whether the player can shoot.
     fn can_shoot(&mut self) -> bool {
-        self.cooldown < 0.0
+        self.bcooldown <= 0.0 && self.scooldown <= 0.0
     }
 
     /// Return the x position of the player

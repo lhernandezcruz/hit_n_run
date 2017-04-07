@@ -12,6 +12,7 @@ use std::f64;
 use vector::Vector;
 use constants::enemy_constants::*;
 use weapons::bullet::Bullet;
+use weapons::orb::Orb;
 use constants::color::*;
 
 /// Enemy
@@ -29,7 +30,9 @@ pub struct Enemy {
     /// Health of the enemy
     health: u32,
     /// Cooldown for shooting
-    cooldown: f64
+    cooldown: f64,
+    /// Orb
+    orb: Orb,
 }
 
 impl Enemy {
@@ -42,7 +45,8 @@ impl Enemy {
             rotation: 0.0,
             forward: b,
             health: STARTHEALTH,
-            cooldown: COOLDOWN
+            cooldown: rand::thread_rng().gen_range(0.0, COOLDOWN),
+            orb: Orb::new(x, y),
         }
     }
 
@@ -54,7 +58,7 @@ impl Enemy {
         let dist = (xdiff.powi(2) + ydiff.powi(2)).sqrt();
 
         // update health and kill bullet if enemy is hit
-        if self.get_alive() && dist < ENEMYR / 2.0 - EPSILON {
+        if self.get_alive() && dist < ENEMYD / 2.0 - EPSILON {
             self.decrease_health();
             b.set_alive(false);
         }
@@ -112,7 +116,7 @@ impl Enemy {
         let dist = self.pos.dist(&self.desired_pos);
 
         // if the enemy is not at desired location keep moving
-        if dist > ENEMYR && self.forward {
+        if dist > ENEMYD && self.forward {
             self.vel.x = VEL * args.dt * self.rotation.cos();
             self.vel.y = VEL * args.dt * self.rotation.sin();
         } else {
@@ -122,14 +126,17 @@ impl Enemy {
         // move enemy
         self.mov(dimensions[0], dimensions[1]);
 
+        // update orb
+        self.orb.update(self.pos.x, self.pos.y, args.dt);
+
         // check if enemy can shoot
         if self.can_shoot() {
             self.update_cooldown(args.dt);
 
             // has small error when shooting
             let rot = rand::thread_rng().gen_range(-SHOOTINGERR, SHOOTINGERR);
-            return Some(Bullet::new(self.pos.x + ENEMYR / 2.0 * self.rotation.cos(),
-                                    self.pos.y + ENEMYR / 2.0 * self.rotation.sin(),
+            return Some(Bullet::new(self.pos.x + ENEMYD / 2.0 * self.rotation.cos(),
+                                    self.pos.y + ENEMYD / 2.0 * self.rotation.sin(),
                                     self.rotation + rot,
                                     true));
         }
@@ -143,22 +150,30 @@ impl Enemy {
     pub fn draw(&self, c: graphics::Context, gl: &mut GlGraphics, glyph_cache: &mut GlyphCache) {
         use graphics::*;
 
-        let circle = rectangle::square(0.0, 0.0, ENEMYR);
-        let square = rectangle::square(0.0, 0.0, GUNR);
+        let circle = rectangle::square(0.0, 0.0, ENEMYD);
+        let square = rectangle::square(0.0, 0.0, GUND);
+        let orb = rectangle::square(0.0, 0.0, ORBD);
 
         // create transform matrix
         let transform = c.transform
             .trans(self.pos.x, self.pos.y)
-            .trans(-ENEMYR / 2.0, -ENEMYR / 2.0);
+            .trans(-ENEMYD / 2.0, -ENEMYD / 2.0);
 
         let transform2 = c.transform
             .trans(self.pos.x, self.pos.y)
             .rot_rad(self.rotation)
-            .trans(ENEMYR / 2.0 - GUNR / 2.0, -GUNR / 2.0);
+            .trans(ENEMYD / 2.0 - GUND / 2.0, -GUND / 2.0);
+
+        let transform3 =
+            c.transform.trans(self.orb.get_x(), self.orb.get_y()).trans(-ORBD / 2.0, -ORBD / 2.0);
+
+        // get orb color
+        let color = if self.get_orb_active() { ORANGE } else { ANGEL };
 
         // Draw a box rotating around the middle of the screen.
         ellipse(BLUE, circle, transform, gl);
         rectangle(PINK, square, transform2, gl);
+        ellipse(color, orb, transform3, gl);
 
         // display the health
         text(WHITE,
@@ -166,7 +181,7 @@ impl Enemy {
              format!("{}", self.get_health()).as_str(),
              glyph_cache,
              c.transform.trans(self.pos.x, self.pos.y),
-             gl);
+             gl);        
     }
 
     /// Returns whether the enemy is alive
@@ -196,5 +211,25 @@ impl Enemy {
     /// Decreases the health of the enemy
     fn decrease_health(&mut self) {
         self.health -= 1;
+    }
+
+    /// Return the x position of the orb
+    pub fn get_orb_x(&self) -> f64 {
+        self.orb.get_x()
+    }
+
+    /// Return the y position of the orb
+    pub fn get_orb_y(&self) -> f64 {
+        self.orb.get_y()
+    }
+
+    /// Return whether the orb is active or not
+    pub fn get_orb_active(&self) -> bool {
+        self.orb.get_active()
+    }
+
+    /// Set whether the orb is active or not
+    pub fn set_orb_active(&mut self, b: bool) {
+        self.orb.set_active(b);
     }
 }

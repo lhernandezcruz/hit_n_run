@@ -96,6 +96,9 @@ impl Game {
                 Some(bullet) => self.enemy_bullets.push(bullet),
                 None => {}
             }
+
+            // check if the player collided with the enemy
+            self.player.collide(enemy);
         }
 
         // check if enemy was hit
