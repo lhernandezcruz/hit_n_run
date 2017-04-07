@@ -15,7 +15,7 @@ mod constants;
 mod vector;
 mod weapons;
 
-// use get width and height for game
+// use width and height for game
 use constants::sizes;
 
 fn main() {
@@ -25,13 +25,14 @@ fn main() {
                                                  [sizes::INITWIDTH, sizes::INITHEIGHT])
         .exit_on_esc(true)
         .build()
-        .unwrap();
+        .expect("Error unwrapping window");
 
     // create gl graphics and game
     let mut gl = GlGraphics::new(opengl);
     let mut g = game::Game::new(sizes::INITWIDTH as f64, sizes::INITHEIGHT as f64);
 
-    let mut glyph_cache = GlyphCache::new("assets/Roboto-Regular.ttf").unwrap();
+    // create glych cache for fonts
+    let mut glyph_cache = GlyphCache::new("assets/Roboto-Regular.ttf").expect("Error unwraping fonts");
 
     // run game
     g.run(&mut window, &mut gl, &mut glyph_cache);
