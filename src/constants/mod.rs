@@ -8,6 +8,7 @@ pub mod color {
     pub const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
     pub const PINK: [f32; 4] = [1.0, 0.0, 1.0, 1.0];
     pub const ANGEL: [f32; 4 ] = [0.5,0.5,1.0,0.5];
+    pub const GREEN: [f32; 4 ] = [0.0,0.5,0.0,1.0];
 }
 
 /// Contains initial game screen sizes
@@ -30,12 +31,14 @@ pub mod player_constants {
     pub const VEL: f64 = 250.0;
     /// Bullet must be this amount inside to count as a hit
     pub const EPSILON: f64 = 0.25;
+    /// Distance desired and actual position can be
+    pub const DDISTANCE: f64 = 3.0;
     /// Cooldown between bursts
     pub const BURSTCOOLDOWN: f64 = 1.0;
     /// Cooldown between shots
     pub const SHOTCOOLDOWN: f64 = 0.25;
     /// Staring amount of shots
-    pub const STARTSHOTS: u32 = 6;
+    pub const STARTSHOTS: u32 = 8;
     /// Starting health for player
     pub const STARTHEALTH: u32 = 30;
     /// Distance of shot amount bar from body
@@ -46,6 +49,26 @@ pub mod player_constants {
     pub const BBARDIST: f64 = 50.0;
     /// Width of the bar
     pub const BARWIDTH: f64 = 1.0;
+}
+
+/// Contains boss constants
+pub mod boss_constants {
+    ///  Cooldown for shooting
+    pub const COOLDOWN: f64 = 1.5;
+    /// Start health of the boss
+    pub const STARTHEALTH: u32 = 5;
+    /// Boss Diameter
+    pub const BOSSD: f64 = 75.0;
+    /// Bullet collision error
+    pub const EPSILON: f64 = 0.1;
+    /// Side length of the gun
+    pub const GUND: f64 = 10.0;
+    /// Fontsize for health
+    pub const FONTSIZE: u32 = 15;
+    /// Rotation multipleis
+    pub const ROTMULT: f64 = 0.1;
+    /// Total bullets it will shoot
+    pub const TOTBULL: f64 = 5.0;
 }
 
 /// Contains enemy constants
@@ -70,12 +93,12 @@ pub mod enemy_constants {
     pub const SHOOTINGERR: f64 = 0.1;
     /// Diameter of the actual orb 
     pub const ORBD: f64 = 10.0;
+    /// Diamere of the orb orbit
+    pub const ORBITD: f64 = 50.0;
 }
 
 /// Contains orb constants
 pub mod orb_constants {
-    /// Diameter of the orb orbit
-    pub const ORBD: f64 = 50.0;
     /// Vel multiplier for rotation
     pub const VEL: f64 = 0.01;
     /// Used for reseting the angle
@@ -98,4 +121,8 @@ pub mod game_constants {
     pub const FPS: u64 = 60;
     /// Font size for score
     pub const FONTSIZE: u32 = 15;
+    /// Health added for boss kill
+    pub const BOSSKILL: u32 = 2;
+    /// Health added for enemy kill
+    pub const ENEMYKILL: u32 = 1;
 }

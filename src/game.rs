@@ -16,6 +16,7 @@ use constants::game_constants::*;
 use constants::color::*;
 use models::enemy::Enemy;
 use models::player::Player;
+use models::boss::Boss;
 use weapons::bullet::Bullet;
 
 /// Contains Game State
@@ -38,6 +39,8 @@ pub struct Game {
     current_kills: u32,
     /// But did you die tho?
     game_over: bool,
+    /// Bosses
+    bosses: Vec<Boss>,
 }
 
 impl Game {
@@ -59,6 +62,7 @@ impl Game {
             level: 1,
             current_kills: 0,
             game_over: false,
+            bosses: Vec::<Boss>::new(),
         }
 
     }
@@ -101,11 +105,24 @@ impl Game {
             self.player.collide(enemy);
         }
 
-        // check if enemy was hit
+        for boss in &mut self.bosses {
+            // update the bosses
+            let shots = boss.update(args);
+
+            match shots {
+                Some(mut vec) => self.enemy_bullets.append(&mut vec),
+                None => {}
+            }
+        }
+
+        // check if an enemy or a boss was hit
         for bullet in &mut self.player_bullets {
             bullet.update(args, &self.dimensions);
             for enemy in &mut self.enemies {
                 enemy.hit(bullet);
+            }
+            for boss in &mut self.bosses {
+                boss.hit(bullet);
             }
         }
 
@@ -113,28 +130,69 @@ impl Game {
         self.player_bullets.retain(|e| e.get_alive());
         self.enemy_bullets.retain(|e| e.get_alive());
 
-        // remove dead enemies
-        let len = self.enemies.len();
-        self.enemies.retain(|e| e.get_alive());
+        // how many enemies we will add (2 times the amount of kills)
+        let mut enemies_to_add = 0;
 
-        // check if an enemy was killed
-        if len != self.enemies.len() {
-            // update stats
-            self.player.increase_health();
-            self.update_score();
-            self.update_kills();
+        // used so that local borrows die
+        {
+            // borrow before closure
+            let player = &mut self.player;
+            let score = &mut self.score;
+            let kills = &mut self.current_kills;
 
-            // check if we have passed a level
-            if self.new_level() {
-                self.enemies.clear();
-                self.add_enemy();
-                self.update_level();
+            // check if enemies are alive
+            self.enemies.retain(|e| if e.get_alive() {
+                true
             } else {
-                self.add_enemy();
-                self.add_enemy();
-            }
+                *score += 1;
+                *kills += 1;
+                enemies_to_add += 2;
+                player.increase_health(ENEMYKILL);
+                false
+            });
 
         }
+
+        // used so that local borrows die
+        {
+            // borrow before closure
+            let player = &mut self.player;
+            let score = &mut self.score;
+
+            // remove dead bosses
+            self.bosses.retain(|e| if e.get_alive() {
+                true
+            } else {
+                player.increase_health(BOSSKILL);
+                *score += 2;
+                false
+            });
+
+        }
+
+        // check if we have passed a level
+        if self.new_level() {
+            self.enemies.clear();
+            self.add_enemy();
+            let mut x = 0;
+
+            // add bosses
+            while x < self.level {
+                self.add_boss();
+                x += 1;
+            }
+
+            // update level information
+            self.update_level();
+        } else {
+            let mut x = 0;
+            while x < enemies_to_add {
+                self.add_enemy();
+                x += 1;
+            }
+        }
+
+
     }
 
     /// Draws the gameboard
@@ -159,6 +217,11 @@ impl Game {
             // draw enemies
             for enemy in &self.enemies {
                 enemy.draw(c, gl, glyph_cache);
+            }
+
+            // draw bosses
+            for boss in &self.bosses {
+                boss.draw(c, gl, glyph_cache);
             }
 
             // draw player
@@ -206,6 +269,15 @@ impl Game {
         }
     }
 
+    /// Adds boss to the game.
+    fn add_boss(&mut self) {
+        // get random x and y locations
+        let x = rand::thread_rng().gen_range(0.0, self.dimensions[0]);
+        let y = rand::thread_rng().gen_range(0.0, self.dimensions[1]);
+
+        self.bosses.push(Boss::new(x, y));
+    }
+
     /// Updates the size of the window when it is resized
     fn on_resize(&mut self, new_dimensions: &[u32; 2]) {
         self.dimensions[0] = new_dimensions[0] as f64;
@@ -244,6 +316,7 @@ impl Game {
         self.enemies.clear();
         self.player_bullets.clear();
         self.enemy_bullets.clear();
+        self.bosses.clear();
         self.score = 0;
         self.level = 1;
         self.current_kills = 0;
@@ -345,16 +418,6 @@ impl Game {
     /// Returns whether we have moved to new level
     fn new_level(&self) -> bool {
         self.current_kills == self.level
-    }
-
-    /// Updates the score of the game
-    fn update_score(&mut self) {
-        self.score += 1;
-    }
-
-    /// Update the amount of kills in the current level
-    fn update_kills(&mut self) {
-        self.current_kills += 1;
     }
 
     /// Update the level and reset current_kills

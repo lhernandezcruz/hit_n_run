@@ -15,20 +15,23 @@ pub struct Orb {
     pos: Vector,
     /// Cooldown of orb activity
     cooldown: f64,
+    /// Diameter of the orbit
+    orbit_diameter: f64,
 }
 
 impl Orb {
     /// Return a new orb
-    pub fn new(x: f64, y: f64) -> Self {
+    pub fn new(x: f64, y: f64, diameter: f64) -> Self {
         // get the original position of the orb
         let rng_angle = rand::thread_rng().gen_range(0.0, 2.0);
-        let posx = x + (ORBD * f64::consts::PI * rng_angle).cos();
-        let posy = y + (ORBD * f64::consts::PI * rng_angle).sin();
+        let posx = x + (diameter * f64::consts::PI * rng_angle).cos();
+        let posy = y + (diameter * f64::consts::PI * rng_angle).sin();
         Orb {
             active: true,
             theta: rng_angle,
             pos: Vector::new(posx, posy),
             cooldown: COOLDOWN,
+            orbit_diameter: diameter
         }
     }
 
@@ -52,8 +55,8 @@ impl Orb {
         }
 
         // update position
-        self.pos.x = x + ORBD * self.theta.cos();
-        self.pos.y = y + ORBD * self.theta.sin();
+        self.pos.x = x + self.orbit_diameter * self.theta.cos();
+        self.pos.y = y + self.orbit_diameter * self.theta.sin();
 
         // udpate active cooldown
         if !self.active {

@@ -46,7 +46,7 @@ impl Enemy {
             forward: b,
             health: STARTHEALTH,
             cooldown: rand::thread_rng().gen_range(0.0, COOLDOWN),
-            orb: Orb::new(x, y),
+            orb: Orb::new(x, y, ORBITD),
         }
     }
 
@@ -165,7 +165,7 @@ impl Enemy {
             .trans(ENEMYD / 2.0 - GUND / 2.0, -GUND / 2.0);
 
         let transform3 =
-            c.transform.trans(self.orb.get_x(), self.orb.get_y()).trans(-ORBD / 2.0, -ORBD / 2.0);
+            c.transform.trans(self.get_orb_x(), self.get_orb_y()).trans(-ORBD / 2.0, -ORBD / 2.0);
 
         // get orb color
         let color = if self.get_orb_active() { ORANGE } else { ANGEL };

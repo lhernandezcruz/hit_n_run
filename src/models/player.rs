@@ -89,16 +89,6 @@ impl Player {
         // update desired x position
         self.desired_pos.x = mouse_x;
         self.desired_pos.y = mouse_y;
-
-        // update angle
-        let xdiff = mouse_x - self.pos.x;
-        let ydiff = mouse_y - self.pos.y;
-        let mag = (xdiff.powi(2) + ydiff.powi(2)).sqrt();
-        let unitx = xdiff / mag;
-        let unity = ydiff / mag;
-
-        // turn unit vector to radians
-        self.rotation = unity.atan2(unitx);
     }
 
     /// Move the player based on its velocity
@@ -123,13 +113,26 @@ impl Player {
         self.pos.y += self.vel.y;
     }
 
+    fn update_angle(&mut self) {
+        // update angle
+        let xdiff = self.desired_pos.x - self.pos.x;
+        let ydiff = self.desired_pos.y - self.pos.y;
+        let mag = (xdiff.powi(2) + ydiff.powi(2)).sqrt();
+        let unitx = xdiff / mag;
+        let unity = ydiff / mag;
+
+        // turn unit vector to radians
+        self.rotation = unity.atan2(unitx);
+    }
+
     /// Update the players position and velocity. Return a bullet if it is shooting.
     pub fn update(&mut self, args: &UpdateArgs, dimensions: &[f64; 2]) -> Option<Bullet> {
         // get distance to desired location
         let dist = self.pos.dist(&self.desired_pos);
 
         // if the player is not at desired location keep velocity else stop velocity
-        if dist > EPSILON {
+        if dist > DDISTANCE {
+            self.update_angle();
             self.vel.x = VEL * args.dt * self.rotation.cos();
             self.vel.y = VEL * args.dt * self.rotation.sin();
         } else {
@@ -221,8 +224,8 @@ impl Player {
     }
 
     /// Increase the health
-    pub fn increase_health(&mut self) {
-        self.health += 1;
+    pub fn increase_health(&mut self, increase : u32) {
+        self.health += increase;
     }
 
     /// Decreases the health by 1
