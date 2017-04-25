@@ -4,11 +4,16 @@ Simple game made with Rust using piston. This game was written as a project for 
 # Build and Run
 ![Image of game](images/screenshot1.JPG?raw=true "Image of Hit and Run")
 
+Gameplay video: https://www.youtube.com/watch?v=lPVpnZA8uNY
+
+## Requirements
+Microsoft Visual C++ 2015 Runtime is required to run the game. This can be downloaded at: https://www.microsoft.com/en-us/download/details.aspx?id=48145.
+
+## Install
 Windows 10: Easiest method is to just download the game from https://github.com/lhernandezcruz/hit_n_run/releases and run the executable.
 If Rust and Cargo is installed then downloading the files and running the command 'cargo run' should run the game. 
 
 Note: Game has only been tested on Windows 10.
-
 # Gameplay
 ## Controls
 * SPACE - Shoot a bullet
