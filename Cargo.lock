@@ -1,6 +1,6 @@
 [root]
 name = "hit_n_run"
-version = "0.1.2"
+version = "0.1.5"
 dependencies = [
  "find_folder 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "piston 0.31.3 (registry+https://github.com/rust-lang/crates.io-index)",
